@@ -1,6 +1,5 @@
 package com.example.webapp.config;
 
-import com.example.webapp.dao.RoleDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +16,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private LoginSuccessHandler handler;
+    private final LoginSuccessHandler handler;
 
     @Autowired
     public SecurityConfig(LoginSuccessHandler handler) {
@@ -26,6 +25,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
         http.formLogin()
                 // указываем страницу с формой логина
                 .loginPage("/login")
@@ -55,8 +55,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //страницы аутентификаци доступна всем
                 .antMatchers("/login").anonymous()
                 // защищенные URL
-                .antMatchers("/user").hasAuthority("USER")
-                .antMatchers("/**").access("hasAuthority('ADMIN')").anyRequest().authenticated();
+                .antMatchers("/index").hasAuthority("ADMIN")
+                .antMatchers("/userPage").hasAnyAuthority("USER", "ADMIN")
+                .anyRequest().authenticated();
     }
 
     @Bean
